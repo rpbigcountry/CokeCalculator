@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Brick Trip Calculator</title>
+<style>
+  :root {
+    --bg: #f4f6f4;
+    --card: #ffffff;
+    --text: #1a1f1a;
+    --muted: #6b756b;
+    --accent: #2f5233;
+    --accent-light: #e3ede1;
+    --border: #dfe4de;
+    --input-bg: #fffbe0;
+    --input-border: #e8d84a;
+    --step-bg: #eef3ec;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141714;
+      --card: #1e231e;
+      --text: #eef1ee;
+      --muted: #9aa69a;
+      --accent: #7fbf8f;
+      --accent-light: #253527;
+      --border: #333a33;
+      --input-bg: #2b2a10;
+      --input-border: #8a7f1f;
+      --step-bg: #232a23;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141714;
+    --card: #1e231e;
+    --text: #eef1ee;
+    --muted: #9aa69a;
+    --accent: #7fbf8f;
+    --accent-light: #253527;
+    --border: #333a33;
+    --input-bg: #2b2a10;
+    --input-border: #8a7f1f;
+    --step-bg: #232a23;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    min-height: 100%;
+    padding: 24px 16px 40px;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin: 0 0 14px;
+  }
+  .field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .field label { font-size: 0.95rem; flex: 1; }
+  .field input {
+    width: 100px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 1rem;
+    text-align: center;
+    font-weight: 600;
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .result {
+    background: var(--accent-light);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .result .num { font-size: 1.5rem; font-weight: 700; color: var(--accent); }
+  .result .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .zero-waste {
+    display: inline-block;
+    margin-top: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  .steps { counter-reset: step; }
+  .step {
+    display: flex;
+    gap: 12px;
+    background: var(--step-bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .step:last-child { margin-bottom: 0; }
+  .step .badge {
+    counter-increment: step;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step .step-text { font-size: 0.92rem; line-height: 1.4; }
+  .step .step-text b { color: var(--accent); }
+  .cycle-note {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  details { font-size: 0.85rem; color: var(--muted); }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+  ul { margin: 8px 0 0; padding-left: 18px; }
+  li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧪 Brick Trip Calculator</h1>
+  <p class="sub">Zero-waste method — one clean 2-load cycle per brick, no leftovers to track.</p>
+
+  <div class="card">
+    <h2>Your Trip</h2>
+    <div class="field">
+      <label for="bricks">Bricks you want to make</label>
+      <input type="number" id="bricks" min="1" step="1" value="2">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Bring This Much (Exact — No Waste)</h2>
+    <div class="result-grid">
+      <div class="result"><div class="num" id="out-leaves">0</div><div class="lbl">Leaves</div></div>
+      <div class="result"><div class="num" id="out-cement">0</div><div class="lbl">Cement</div></div>
+      <div class="result"><div class="num" id="out-gas">0</div><div class="lbl">Gasoline</div></div>
+      <div class="result"><div class="num" id="out-acid">0</div><div class="lbl">Acid</div></div>
+    </div>
+    <div class="zero-waste">✓ 0 leftover Coca Blends, 0 leftover coke</div>
+  </div>
+
+  <div class="card">
+    <h2>How To Run It — <span id="cycle-count">1</span> Cycle<span id="cycle-plural">s</span>, Back To Back</h2>
+    <p class="sub" style="margin-bottom:14px;">Do this exact 2-load sequence once per brick. Each full cycle uses <b>350 leaves + 7 cement</b> and yields exactly <b>100 Coca Blends — precisely one brick's worth</b>.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="badge"></div>
+        <div class="step-text">Add <b>4 batches of 50 leaves</b> (200 total) to the box. Add <b>3 cement</b> — only enough for the top 3 batches. This yields <b>45 Coca Blends</b>. Leave the bottom batch (50 leaves) un-cemented.</div>
+      </div>
+      <div class="step">
+        <div class="badge"></div>
+        <div class="step-text">Add <b>3 more batches of 50 leaves</b> (150 total) on top of the untouched bottom layer. Add <b>3 cement</b> for those new top batches, <b>plus 1 more cement</b> to finally close out the original bottom layer. This yields <b>55 Coca Blends</b> in one step.</div>
+      </div>
+      <div class="step">
+        <div class="badge"></div>
+        <div class="step-text">You now have exactly <b>100 Coca Blends</b> (45 + 55). Convert all of it: 100 blends + <b>10 gasoline</b> → 20 coca paste → + <b>20 acid</b> → 20 coke → <b>1 full brick</b>.</div>
+      </div>
+      <div class="step">
+        <div class="badge"></div>
+        <div class="step-text">Repeat this entire 2-load sequence from scratch for every additional brick. Never carry a "half-finished" bottom layer between bricks — closing it out fully every cycle is what keeps the math clean.</div>
+      </div>
+    </div>
+    <div class="cycle-note">Why this beats stretching batches across a long session: the only way to get the "bonus" 55-blend load is to close the bottom layer with 1 extra cement. Closing it every 2 loads (once per brick) uses that bonus efficiently every time. Stretching it across a longer run only gets you that bonus once, forcing extra loads elsewhere and leaving awkward leftovers.</div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>Full material breakdown per brick</summary>
+      <ul>
+        <li>350 leaves, 7 cement, 10 gasoline, 20 acid → 1 brick, every time, no exceptions.</li>
+        <li>Multiply everything by the number of bricks — it scales perfectly linearly with zero waste at any quantity.</li>
+        <li>10 Coca Blends + 1 gasoline → 2 coca paste.</li>
+        <li>1 coca paste + 1 acid → 1 coke.</li>
+        <li>20 coke → 1 brick.</li>
+        <li>All figures are based on in-game testing/description, not an official source.</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<script>
+  const bricksEl = document.getElementById('bricks');
+
+  function calc() {
+    let bricks = parseInt(bricksEl.value, 10);
+    if (isNaN(bricks) || bricks < 1) bricks = 0;
+
+    const leaves = 350 * bricks;
+    const cement = 7 * bricks;
+    const gas = 10 * bricks;
+    const acid = 20 * bricks;
+
+    document.getElementById('out-leaves').textContent = leaves.toLocaleString();
+    document.getElementById('out-cement').textContent = cement.toLocaleString();
+    document.getElementById('out-gas').textContent = gas.toLocaleString();
+    document.getElementById('out-acid').textContent = acid.toLocaleString();
+    document.getElementById('cycle-count').textContent = bricks.toLocaleString();
+    document.getElementById('cycle-plural').textContent = bricks === 1 ? '' : 's';
+
+    try {
+      localStorage.setItem('brickCalcV2', JSON.stringify({ bricks }));
+    } catch (e) {}
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('brickCalcV2'));
+    if (saved && typeof saved.bricks === 'number') bricksEl.value = saved.bricks;
+  } catch (e) {}
+
+  bricksEl.addEventListener('input', calc);
+  calc();
+</script>
+</body>
+</html>
